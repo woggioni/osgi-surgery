@@ -1,0 +1,42 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+configurations {
+    bundleClasspath {
+        // The `osgi.core` and `osgi.cmpn` should be declared as `compileOnly` dependencies
+        // but many osgi packages include them as transitive dependencies unfortunately
+        exclude group: "org.osgi", module: "osgi.core"
+        exclude group: "org.osgi", module: "osgi.cmpn"
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+    implementation "org.apache.felix:org.apache.felix.framework:$felixVersion"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+
+
+    // Tests' classpath needs to access `$project.buildDir/resources/main` to run tests for this module.
+
+    //  Declare below the 3rd parties dependencies `bundle` task pack in this module to bootstrap Corda node.
+    //
+    bundleClasspath "org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+}
+
+//import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+compileKotlin {
+    kotlinOptions {
+        apiVersion = "1.4"
+        languageVersion = "1.4"
+        jvmTarget = "11"
+        suppressWarnings = true
+    }
+}

@@ -1,0 +1,17 @@
+plugins {
+    id 'biz.aQute.bnd.builder'
+}
+
+dependencies {
+    compileOnly project(":bundles:B")
+}
+
+jar {
+    bnd("""
+        Bundle-Name: A
+        Bundle-SymbolicName: A
+        Bundle-Vendor: woggioni
+        Bundle-Version: ${project.version}
+        Bundle-Activator: net.woggioni.osgi.surgery.bundles.a.Activator
+""".stripLeading())
+}

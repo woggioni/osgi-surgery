@@ -1,0 +1,12 @@
+plugins {
+    id 'biz.aQute.bnd.builder'
+}
+
+jar {
+    bnd("""
+        Bundle-Name: B
+        Bundle-SymbolicName: B
+        Bundle-Vendor: woggioni
+        Bundle-Version: ${project.version}
+""".stripLeading())
+}

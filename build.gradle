@@ -1,12 +1,44 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
+    id 'biz.aQute.bnd.builder' apply false
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-    jcenter()
+def VERSION = "1.0"
+
+version = VERSION
+
+allprojects {
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+
+    compileKotlin {
+        kotlinOptions {
+            apiVersion = "1.4"
+            languageVersion = "1.4"
+            jvmTarget = "11"
+            suppressWarnings = true
+        }
+    }
 }
+
+subprojects {
+
+    apply plugin: 'biz.aQute.bnd.builder'
+
+    dependencies {
+        compileOnly group: 'org.osgi', name: "osgi.core", version: osgiVersion
+        compileOnly group: 'org.osgi', name: "osgi.annotation", version: osgiVersion
+        compileOnly group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    }
+
+    version = VERSION
+}
+
 
 configurations {
     bundleClasspath {
@@ -14,6 +46,7 @@ configurations {
         // but many osgi packages include them as transitive dependencies unfortunately
         exclude group: "org.osgi", module: "osgi.core"
         exclude group: "org.osgi", module: "osgi.cmpn"
+        exclude group: "org.jetbrains.kotlin"
     }
 }
 
@@ -21,22 +54,43 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     implementation "org.apache.felix:org.apache.felix.framework:$felixVersion"
     implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+    implementation group: "com.beust", name: "jcommander", version: jcommanderVersion
 
+    bundleClasspath project(":bundles:A")
+    bundleClasspath project(":bundles:B")
 
     // Tests' classpath needs to access `$project.buildDir/resources/main` to run tests for this module.
 
     //  Declare below the 3rd parties dependencies `bundle` task pack in this module to bootstrap Corda node.
     //
     bundleClasspath "org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion"
-    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 }
 
-//import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-compileKotlin {
-    kotlinOptions {
-        apiVersion = "1.4"
-        languageVersion = "1.4"
-        jvmTarget = "11"
-        suppressWarnings = true
+tasks.register("run", JavaExec) { task ->
+    def dependentProjects = [":bundles:A", ":bundles:B"]
+    dependentProjects.each { projectPath ->
+        task.inputs.files(project(projectPath).tasks.named("jar").get().outputs.files)
+    }
+    mainClass = 'net.woggioni.osgi.surgery.Launcher'
+    classpath sourceSets.main.runtimeClasspath
+    configurations.bundleClasspath.files.each {
+        args("-b", it.absolutePath)
+    }
+    systemProperties([
+        "thread.leak" : true
+    ])
+}
+
+tasks.named("test", Test) { task ->
+    useJUnitPlatform()
+    def dependentProjects = [":bundles:A", ":bundles:B", ":bundles:B2"]
+    dependentProjects.each { projectPath ->
+        def taskOutput = project(projectPath).tasks.named("jar").get().outputs.files
+        def jarFile = taskOutput.singleFile
+        task.inputs.files(taskOutput)
+        String key = projectPath.substring(1).replace(':', '.')
+        task.systemProperties[key] = jarFile.toString()
     }
 }

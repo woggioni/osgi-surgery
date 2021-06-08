@@ -1,46 +1,31 @@
 package net.woggioni.osgi.surgery.bundles.a
 
-import net.woggioni.osgi.surgery.bundles.b.B
+import net.woggioni.osgi.surgery.bundles.b.KotlinChild
 import org.osgi.framework.BundleActivator
 import org.osgi.framework.BundleContext
 import org.slf4j.LoggerFactory
-import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.reflect.full.memberProperties
+
+class Bar : KotlinChild {
+    override fun foo() {
+        TODO("Not yet implemented")
+    }
+
+    override fun bar() {
+        TODO("Not yet implemented")
+    }
+}
 
 class Activator : BundleActivator {
     companion object {
         private val log = LoggerFactory.getLogger(BundleActivator::class.java)
-        private var l = mutableListOf<String>()
     }
-
-    private var workerRunning = AtomicBoolean(false)
-
-    val worker = Runnable {
-        var counter = 0
-        while(workerRunning.get()) {
-            log.info("Running ${counter}, squared: ${B.square(counter)}")
-            counter++
-            Thread.sleep(1000)
-        }
-    }
-
-    private var thread : Thread? = null
 
     override fun start(context: BundleContext?) {
-        l.add("Started")
-        log.debug(l.toString())
-        workerRunning.set(true)
-        thread = Thread(worker).apply {
-            start()
-        }
+        val bar = Bar()
+        println(bar::class.memberProperties)
     }
 
-    override fun stop(context: BundleContext?) {
-        l.add("Stopped")
-        if(System.getProperty("thread.leak")?.toBoolean() != true) {
-            workerRunning.set(false)
-            thread?.join()
-        }
-    }
+    override fun stop(context: BundleContext?) {}
 }
 
-class A {}

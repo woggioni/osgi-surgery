@@ -3,6 +3,9 @@ plugins {
 }
 
 dependencies {
+    compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+//    compileOnly "org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion"
     compileOnly project(":bundles:B")
 }
 

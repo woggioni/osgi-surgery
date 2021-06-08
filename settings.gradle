@@ -14,4 +14,4 @@ rootProject.name = 'osgi-surgery'
 
 include("bundles:A")
 include("bundles:B")
-include("bundles:B2")
+include 'boo'

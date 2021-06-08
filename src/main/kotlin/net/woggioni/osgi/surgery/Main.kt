@@ -1,8 +1,5 @@
 package net.woggioni.osgi.surgery
 
-import com.beust.jcommander.JCommander
-import com.beust.jcommander.Parameter
-import com.beust.jcommander.converters.PathConverter
 import org.osgi.framework.*
 import org.osgi.framework.launch.Framework
 import org.osgi.framework.launch.FrameworkFactory
@@ -170,32 +167,14 @@ class Container : Closeable {
 
 object Launcher {
 
-    private class CliArgument {
-        @Parameter(names = ["-b", "--bundle-path"],
-            description = "The path to the folder containing the application bundles",
-            descriptionKey = "BUNDLE_PATH",
-            converter = PathConverter::class)
-        var bundlePath = listOf(Paths.get("bundles"))
-
-        @Parameter(names = ["-h", "--help"], help = true)
-        var help = false
-    }
-
     @JvmStatic
     fun main(vararg arg : String) {
-        val cliArgs = CliArgument()
-        val jc = JCommander.newBuilder()
-            .addObject(cliArgs)
-            .build()
-        jc.parse(*arg)
-        if (cliArgs.help) {
-            jc.usage()
-            return
-        }
         Container().use { cnt ->
             cnt.run {
                 start()
-                cliArgs.bundlePath.forEach(::install)
+                arg.forEach {
+                    Paths.get(it).let(::install)
+                }
                 activate()
                 while(true) Thread.sleep(10000)
             }

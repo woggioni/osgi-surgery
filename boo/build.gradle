@@ -1,0 +1,12 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    implementation project (":bundles:B")
+}
+
+run {
+    mainClassName = 'net.woggioni.osgi.surgery.boo.MainKt'
+}

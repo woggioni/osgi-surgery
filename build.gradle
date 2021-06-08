@@ -11,9 +11,7 @@ allprojects {
     apply plugin: 'org.jetbrains.kotlin.jvm'
 
     repositories {
-        mavenLocal()
         mavenCentral()
-        jcenter()
     }
 
     compileKotlin {
@@ -21,7 +19,12 @@ allprojects {
             apiVersion = "1.4"
             languageVersion = "1.4"
             jvmTarget = "11"
-            suppressWarnings = true
+//            freeCompilerArgs += [
+//                    "-Xjvm-default=all",
+//                    // Prevent Kotlin from warning about kotlin.* classes inside the OSGi bundle.
+//                    "-Xskip-runtime-version-check",
+//                    "-java-parameters"
+//            ]
         }
     }
 }
@@ -39,33 +42,33 @@ subprojects {
     version = VERSION
 }
 
-
 configurations {
     bundleClasspath {
-        // The `osgi.core` and `osgi.cmpn` should be declared as `compileOnly` dependencies
-        // but many osgi packages include them as transitive dependencies unfortunately
         exclude group: "org.osgi", module: "osgi.core"
         exclude group: "org.osgi", module: "osgi.cmpn"
         exclude group: "org.jetbrains.kotlin"
+
+        resolutionStrategy {
+            dependencySubstitution {
+                substitute module('org.jetbrains.kotlin:kotlin-stdlib-jdk8') with module("net.corda.kotlin:kotlin-stdlib-jdk8-osgi:$kotlinVersion")
+                substitute module('org.jetbrains.kotlin:kotlin-stdlib-jdk7') with module("net.corda.kotlin:kotlin-stdlib-jdk7-osgi:$kotlinVersion")
+                substitute module('org.jetbrains.kotlin:kotlin-stdlib-common') with module("org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion")
+                substitute module('org.jetbrains.kotlin:kotlin-stdlib') with module("org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion")
+                substitute module('org.jetbrains.kotlin:kotlin-reflect') with module("org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion")
+            }
+        }
     }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     implementation "org.apache.felix:org.apache.felix.framework:$felixVersion"
     implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
-    implementation group: "com.beust", name: "jcommander", version: jcommanderVersion
 
     bundleClasspath project(":bundles:A")
     bundleClasspath project(":bundles:B")
-
-    // Tests' classpath needs to access `$project.buildDir/resources/main` to run tests for this module.
-
-    //  Declare below the 3rd parties dependencies `bundle` task pack in this module to bootstrap Corda node.
-    //
-    bundleClasspath "org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
-    testRuntime "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 }
 
 tasks.register("run", JavaExec) { task ->
@@ -76,21 +79,6 @@ tasks.register("run", JavaExec) { task ->
     mainClass = 'net.woggioni.osgi.surgery.Launcher'
     classpath sourceSets.main.runtimeClasspath
     configurations.bundleClasspath.files.each {
-        args("-b", it.absolutePath)
-    }
-    systemProperties([
-        "thread.leak" : true
-    ])
-}
-
-tasks.named("test", Test) { task ->
-    useJUnitPlatform()
-    def dependentProjects = [":bundles:A", ":bundles:B", ":bundles:B2"]
-    dependentProjects.each { projectPath ->
-        def taskOutput = project(projectPath).tasks.named("jar").get().outputs.files
-        def jarFile = taskOutput.singleFile
-        task.inputs.files(taskOutput)
-        String key = projectPath.substring(1).replace(':', '.')
-        task.systemProperties[key] = jarFile.toString()
+        args(it.absolutePath)
     }
 }

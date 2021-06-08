@@ -1,84 +1,26 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
-    id 'biz.aQute.bnd.builder' apply false
+    id 'application'
 }
 
-def VERSION = "1.0"
-
-version = VERSION
-
-allprojects {
-    apply plugin: 'org.jetbrains.kotlin.jvm'
-
-    repositories {
-        mavenCentral()
-    }
-
-    compileKotlin {
-        kotlinOptions {
-            apiVersion = "1.4"
-            languageVersion = "1.4"
-            jvmTarget = "11"
-//            freeCompilerArgs += [
-//                    "-Xjvm-default=all",
-//                    // Prevent Kotlin from warning about kotlin.* classes inside the OSGi bundle.
-//                    "-Xskip-runtime-version-check",
-//                    "-java-parameters"
-//            ]
-        }
-    }
-}
-
-subprojects {
-
-    apply plugin: 'biz.aQute.bnd.builder'
-
-    dependencies {
-        compileOnly group: 'org.osgi', name: "osgi.core", version: osgiVersion
-        compileOnly group: 'org.osgi', name: "osgi.annotation", version: osgiVersion
-        compileOnly group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
-    }
-
-    version = VERSION
-}
-
-configurations {
-    bundleClasspath {
-        exclude group: "org.osgi", module: "osgi.core"
-        exclude group: "org.osgi", module: "osgi.cmpn"
-        exclude group: "org.jetbrains.kotlin"
-
-        resolutionStrategy {
-            dependencySubstitution {
-                substitute module('org.jetbrains.kotlin:kotlin-stdlib-jdk8') with module("net.corda.kotlin:kotlin-stdlib-jdk8-osgi:$kotlinVersion")
-                substitute module('org.jetbrains.kotlin:kotlin-stdlib-jdk7') with module("net.corda.kotlin:kotlin-stdlib-jdk7-osgi:$kotlinVersion")
-                substitute module('org.jetbrains.kotlin:kotlin-stdlib-common') with module("org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion")
-                substitute module('org.jetbrains.kotlin:kotlin-stdlib') with module("org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion")
-                substitute module('org.jetbrains.kotlin:kotlin-reflect') with module("org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion")
-            }
-        }
-    }
+repositories {
+    mavenCentral()
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-    implementation "org.apache.felix:org.apache.felix.framework:$felixVersion"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
-
-    bundleClasspath project(":bundles:A")
-    bundleClasspath project(":bundles:B")
 }
 
-tasks.register("run", JavaExec) { task ->
-    def dependentProjects = [":bundles:A", ":bundles:B"]
-    dependentProjects.each { projectPath ->
-        task.inputs.files(project(projectPath).tasks.named("jar").get().outputs.files)
-    }
-    mainClass = 'net.woggioni.osgi.surgery.Launcher'
-    classpath sourceSets.main.runtimeClasspath
-    configurations.bundleClasspath.files.each {
-        args(it.absolutePath)
+run {
+    mainClassName = 'BugKt'
+}
+
+
+compileKotlin {
+    kotlinOptions {
+        apiVersion = "1.4"
+        languageVersion = "1.4"
+        jvmTarget = "11"
     }
 }

@@ -5,13 +5,7 @@ pluginManagement {
 
     plugins {
         id 'org.jetbrains.kotlin.jvm' version kotlinVersion
-        id 'biz.aQute.bnd.builder' version bndVersion
     }
 }
 
 rootProject.name = 'osgi-surgery'
-
-
-include("bundles:A")
-include("bundles:B")
-include 'boo'

@@ -35,14 +35,14 @@ class Container : Closeable {
 
         private const val SYSTEM_PACKAGES_FILE = "META-INF/system_packages"
         private fun loadSystemPackages() = Container::class.java.classLoader
-                .getResource(SYSTEM_PACKAGES_FILE)?.let { resourceUrl ->
-            resourceUrl.openStream().bufferedReader().useLines { lines ->
-                lines.map { line -> line.substringBefore('#') }
-                    .map(String::trim)
-                    .filter(String::isNotEmpty)
-                    .joinToString(",")
-            }
-        } ?: throw IOException("'$SYSTEM_PACKAGES_FILE' not found")
+            .getResource(SYSTEM_PACKAGES_FILE)?.let { resourceUrl ->
+                resourceUrl.openStream().bufferedReader().useLines { lines ->
+                    lines.map { line -> line.substringBefore('#') }
+                        .map(String::trim)
+                        .filter(String::isNotEmpty)
+                        .joinToString(",")
+                }
+            } ?: throw IOException("'$SYSTEM_PACKAGES_FILE' not found")
     }
 
     private val storageDir = Files.createTempDirectory("osgi-surgery")
@@ -99,7 +99,7 @@ class Container : Closeable {
         when {
             bundleId.isEmpty() -> ctx.bundles.asSequence().filter { bundle ->
                 bundle.headers.get(Constants.FRAGMENT_HOST) == null &&
-                    (bundle.state == BundleState.INSTALLED.code || bundle.state == BundleState.RESOLVED.code)
+                        (bundle.state == BundleState.INSTALLED.code || bundle.state == BundleState.RESOLVED.code)
             }
             else -> bundleId.asSequence().map (ctx::getBundle)
         }.forEach { bundle ->
@@ -112,7 +112,7 @@ class Container : Closeable {
         when {
             bundleId.isEmpty() -> ctx.bundles.asSequence().filter { bundle ->
                 bundle.headers.get(Constants.FRAGMENT_HOST) != null &&
-                bundle.state == BundleState.ACTIVE.code
+                        bundle.state == BundleState.ACTIVE.code
             }
             else -> bundleId.asSequence().map (ctx::getBundle)
         }.forEach { bundle ->

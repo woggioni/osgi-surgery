@@ -3,10 +3,16 @@ plugins {
 }
 
 dependencies {
+}
+
+dependencies {
+    compileOnly group: 'org.osgi', name: "osgi.core", version: osgiVersion
+    compileOnly group: 'org.osgi', name: "osgi.annotation", version: osgiVersion
+    compileOnly group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
     compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-//    compileOnly "org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion"
-    compileOnly project(":bundles:B")
+
+    compileOnly project(":osgi:bundles:B")
 }
 
 jar {

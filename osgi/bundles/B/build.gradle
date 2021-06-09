@@ -1,0 +1,18 @@
+plugins {
+    id 'biz.aQute.bnd.builder'
+}
+
+dependencies {
+    compileOnly group: 'org.osgi', name: "osgi.core", version: osgiVersion
+    compileOnly group: 'org.osgi', name: "osgi.annotation", version: osgiVersion
+    compileOnly group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+}
+
+jar {
+    bnd("""
+        Bundle-Name: B
+        Bundle-SymbolicName: B
+        Bundle-Vendor: woggioni
+        Bundle-Version: ${project.version}
+""".stripLeading())
+}

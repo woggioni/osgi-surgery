@@ -1,0 +1,38 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'biz.aQute.bnd.builder' apply false
+}
+
+configurations {
+    bundleClasspath {
+        exclude group: "org.osgi", module: "osgi.core"
+        exclude group: "org.osgi", module: "osgi.cmpn"
+        exclude group: "org.jetbrains.kotlin"
+    }
+}
+
+dependencies {
+    compileOnly group: 'org.osgi', name: "osgi.core", version: osgiVersion
+    compileOnly group: 'org.osgi', name: "osgi.annotation", version: osgiVersion
+    compileOnly group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    implementation "org.apache.felix:org.apache.felix.framework:$felixVersion"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+
+    bundleClasspath project(":osgi:bundles:A")
+    bundleClasspath project(":osgi:bundles:B")
+}
+
+tasks.register("run", JavaExec) { task ->
+    def dependentProjects = [":osgi:bundles:A", ":osgi:bundles:B"]
+    dependentProjects.each { projectPath ->
+        task.inputs.files(project(projectPath).tasks.named("jar").get().outputs.files)
+    }
+    mainClass = 'net.woggioni.osgi.surgery.Launcher'
+    classpath sourceSets.main.runtimeClasspath
+    configurations.bundleClasspath.files.each {
+        args(it.absolutePath)
+    }
+}

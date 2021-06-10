@@ -6,25 +6,22 @@ def VERSION = "1.0"
 
 version = VERSION
 
-subprojects {
-    apply plugin: 'org.jetbrains.kotlin.jvm'
-
-    repositories {
-        mavenCentral()
-    }
-
-    compileKotlin {
+[':non-osgi', 'osgi:bundles:A', 'osgi:bundles:B', 'osgi:bootstrapper'].collect{
+    project(it)
+}.each {
+    it.apply plugin: 'org.jetbrains.kotlin.jvm'
+    it.compileKotlin {
         kotlinOptions {
             apiVersion = "1.4"
             languageVersion = "1.4"
             jvmTarget = "11"
-//            freeCompilerArgs += [
-//                    "-Xjvm-default=all",
-//                    // Prevent Kotlin from warning about kotlin.* classes inside the OSGi bundle.
-//                    "-Xskip-runtime-version-check",
-//                    "-java-parameters"
-//            ]
         }
+    }
+}
+
+subprojects {
+    repositories {
+        mavenCentral()
     }
 }
 

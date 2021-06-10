@@ -1,0 +1,22 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'biz.aQute.bnd.builder'
+}
+
+dependencies {
+    compileOnly group: 'org.osgi', name: "osgi.core", version: osgiVersion
+    compileOnly group: 'org.osgi', name: "osgi.annotation", version: osgiVersion
+    compileOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    compileOnly project(":bundles:B")
+}
+
+jar {
+    bnd("""
+        Bundle-Name: A
+        Bundle-SymbolicName: A
+        Bundle-Vendor: woggioni
+        Bundle-Version: ${project.version}
+        Bundle-Activator: bundles.a.Activator
+""".stripLeading())
+}

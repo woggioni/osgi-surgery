@@ -1,8 +1,10 @@
-import aQute.bnd.gradle.Bndrun
+import aQute.bnd.gradle.Bundle
+import aQute.bnd.gradle.TestOSGi
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id 'org.jetbrains.kotlin.jvm' apply false
-    id 'biz.aQute.bnd.builder'
+    id 'biz.aQute.bnd.builder' apply false
 }
 
 def VERSION = "1.0"
@@ -15,11 +17,12 @@ allprojects {
     }
 }
 
-subprojects {
+allprojects {
     version = VERSION
     apply plugin: 'org.jetbrains.kotlin.jvm'
     apply plugin: 'biz.aQute.bnd.builder'
-    compileKotlin {
+
+    tasks.withType(KotlinCompile.class) {
         kotlinOptions {
             apiVersion = "1.4"
             languageVersion = "1.4"
@@ -33,14 +36,39 @@ configurations {
 }
 
 dependencies {
-    runtimeOnly "org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-osgi-bundle:$kotlinVersion"
     runtimeOnly "org.apache.felix:org.apache.felix.framework:$felixVersion"
-    bundles project('bundles:A')
+
+    testCompileOnly project('bundles:B')
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junitJupiterVersion
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: junitJupiterVersion
+
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitJupiterVersion
+    testRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-commons', version: junitPlatformVersion
+    testRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-launcher', version: junitPlatformVersion
+
     bundles project('bundles:B')
 }
 
-tasks.register('run', Bndrun) {
-    inputs.files(configurations.runtimeClasspath, configurations.bundles)
-    bundles = configurations.runtimeClasspath + configurations.bundles
+def testingBundle = tasks.register('testingBundle', Bundle) {
+    archiveBaseName="test"
+    from sourceSets.test.output
+    sourceSet = sourceSets.test
+    bnd("""
+        Bundle-Name: test
+        Bundle-SymbolicName: test
+        Bundle-Vendor: woggioni
+        Bundle-Version: ${project.version}
+        Test-Cases: \${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable;CONCRETE}
+""".stripLeading())
+}
+
+def testOSGi = tasks.register('testOSGi', TestOSGi) {
+    resultsDirectory = project.convention.getPlugin(JavaPluginConvention.class).testResultsDir
+    bundles = configurations.testRuntimeClasspath + configurations.bundles + testingBundle.get().outputs.files
     bndrun = 'bndrun'
+}
+
+tasks.named('check') {
+    dependsOn testOSGi
 }

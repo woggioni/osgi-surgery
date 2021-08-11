@@ -12,6 +12,5 @@ jar {
         Bundle-SymbolicName: A
         Bundle-Vendor: woggioni
         Bundle-Version: ${project.version}
-        Bundle-Activator: net.woggioni.osgi.surgery.bundles.a.Activator
 """.stripLeading())
 }

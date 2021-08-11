@@ -11,7 +11,7 @@ pluginManagement {
 
 rootProject.name = 'osgi-surgery'
 
-
+include("system")
 include("bundles:A")
 include("bundles:B")
 include("bundles:B2")

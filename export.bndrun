@@ -1,0 +1,33 @@
+-runfw: org.apache.felix.framework;
+-runee: JavaSE-11
+-runproperties:\
+    org.osgi.framework.security=osgi
+-runrequires: \
+    bnd.identity;id='A',\
+    bnd.identity;id='ControlPlane',\
+    bnd.identity;id='org.apache.felix.framework.security'
+-runbundles:\
+ A;version='1.0',\
+ ControlPlane;version='1.0',\
+ org.apache.felix.scr;version='2.1.24',\
+ org.apache.felix.framework.security;version='2.8.1',\
+ org.osgi.util.function;version='1.1.0',\
+ org.osgi.util.promise;version='1.1.1.201810101357'
+-runpath:\
+ osgi-surgery,\
+ slf4j.api;version=latest,\
+ org.apache.logging.log4j.api;version=latest,\
+ org.apache.logging.log4j.slf4j-impl;version=latest,\
+ org.apache.logging.log4j.core;version=latest,\
+ org.jetbrains.kotlin.osgi-bundle;version=latest
+-runsystempackages:\
+ org.slf4j;version="1.7.30",\
+ kotlin;version="1.4.21",\
+ kotlin.jvm;version="1.4.21",\
+ org.apache.logging.log4j;uses:="org.apache.logging.log4j.message,org.apache.logging.log4j.spi,org.apache.logging.log4j.util";version="2.13.3",\
+ org.apache.logging.log4j.internal;uses:="org.apache.logging.log4j,org.apache.logging.log4j.message,org.apache.logging.log4j.util";version="2.13.3",\
+ org.apache.logging.log4j.message;uses:="org.apache.logging.log4j.util";version="2.13.3",\
+ org.apache.logging.log4j.simple;uses:="org.apache.logging.log4j,org.apache.logging.log4j.message,org.apache.logging.log4j.spi,org.apache.logging.log4j.util";version="2.13.3",\
+ org.apache.logging.log4j.spi;uses:="org.apache.logging.log4j,org.apache.logging.log4j.internal,org.apache.logging.log4j.message,org.apache.logging.log4j.util";version="2.13.3",\
+ org.apache.logging.log4j.status;uses:="org.apache.logging.log4j,org.apache.logging.log4j.message,org.apache.logging.log4j.spi";version="2.13.3",\
+ org.apache.logging.log4j.util;uses:="org.apache.logging.log4j.message,org.apache.logging.log4j.spi,org.osgi.framework";version="2.13.3"

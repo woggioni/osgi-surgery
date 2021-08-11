@@ -2,14 +2,12 @@ plugins {
     id 'biz.aQute.bnd.builder'
 }
 
-dependencies {
-    compileOnly project(":bundles:ControlPlane")
-}
+version = "1.0"
 
 jar {
     bnd("""
-        Bundle-Name: A
-        Bundle-SymbolicName: A
+        Bundle-Name: ${project.name}
+        Bundle-SymbolicName: ${project.name}
         Bundle-Vendor: woggioni
         Bundle-Version: ${project.version}
 """.stripLeading())
